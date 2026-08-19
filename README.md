@@ -1,4 +1,4 @@
-# Motor Insurance Pure Premium Modeling using GLM & Tweedie Regression
+﻿# Motor Insurance Pure Premium Modeling using GLM & Tweedie Regression
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-GLM-orange.svg)](https://scikit-learn.org/)
@@ -124,3 +124,4 @@ pytest tests/
 
 ---
 *Proyek 01 dari Seri 5 Portofolio Data Science Industri Asuransi.*
+
