@@ -3,6 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-GLM-orange.svg)](https://scikit-learn.org/)
 [![Domain](https://img.shields.io/badge/Domain-Actuarial%20Pricing-green.svg)](#)
+[![Tests](https://img.shields.io/badge/Tests-Pytest%20Passing-brightgreen.svg)](#)
 
 Repositori ini mengimplementasikan pipeline aktuaria terstandarisasi untuk penetapan tarif premi murni (*Pure Premium*) pada lini asuransi kendaraan bermotor (*Motor Third-Party Liability*). Pendekatan yang digunakan membandingkan metodologi klasik dua tahap (*Two-Part GLM: Poisson & Gamma*) dengan pemodelan langsung satu tahap (*Tweedie Compound Poisson-Gamma Regression*).
 
@@ -15,9 +16,7 @@ Dalam asuransi umum (*Property & Casualty / General Insurance*), perusahaan asur
 ### Persamaan Dasar Premi Murni:
 Tingkat premi murni (*Pure Premium*) adalah ekspektasi total nominal kerugian per unit waktu pertanggungan (*Exposure*):
 
-$$\text{Pure Premium} = \frac{\mathbb{E}[\text{Total Loss}]}{\text{Exposure}} = \mathbb{E}[\text{Frequency}] \times \mathbb{E}[\text{Severity}]$$
-
-$$\text{Pure Premium} = \hat{\lambda} \times \hat{\mu}$$
+$$\text{Pure Premium} = \frac{\mathbb{E}[\text{Total Loss}]}{\text{Exposure}} = \mathbb{E}[\text{Frequency}] \times \mathbb{E}[\text{Severity}] = \hat{\lambda} \times \hat{\mu}$$
 
 1. **Komponen Frekuensi ($\hat{\lambda}$)**: Pemodelan laju klaim per tahun menggunakan **Poisson GLM** dengan link fungsi logaritmik dan offset waktu durasi polis ($\log(\text{Exposure})$):
    $$\mathbb{E}[N | X] = \text{Exposure} \times \exp(X\beta_{\text{freq}})$$
@@ -33,10 +32,14 @@ $$\text{Pure Premium} = \hat{\lambda} \times \hat{\mu}$$
 ## 2. Struktur Repositori
 
 ```
-├── data/           # Dataset mentah & bersih (freMTPL2freq.csv & freMTPL2sev.csv)
-├── images/         # Grafik plot hasil render dari Jupyter (300 DPI)
-├── notebook.ipynb  # Mesin pemrosesan: HANYA berisi impor, olah data, perhitungan statistik, dan pemodelan
-└── README.md       # Laporan utama: Pembahasan bisnis, rumus, tabel metrik, grafik tersemat, dan rekomendasi
+├── .gitignore          # Konfigurasi pengabaian cache Git
+├── data/               # Dataset mentah & bersih (freMTPL2freq.csv & freMTPL2sev.csv)
+├── images/             # Grafik plot hasil render dari Jupyter (300 DPI)
+├── models/             # Binary model pipeline ter-serialize (pricing_pipeline.joblib)
+├── src/                # Modular Python inference engine (PricingEngine)
+├── tests/              # Automated unit tests (Pytest)
+├── notebook.ipynb      # Mesin pemrosesan: Impor, olah data, perhitungan statistik, dan pemodelan
+└── README.md           # Laporan utama: Pembahasan bisnis, rumus, tabel metrik, grafik tersemat, dan rekomendasi
 ```
 
 ---
@@ -71,7 +74,32 @@ Evaluasi performa diskriminasi tarif premi murni diuji pada data pengujian teris
 
 ---
 
-## 5. Rekomendasi Bisnis & Implementasi
+## 5. Implementasi Modular & Pengujian Otomatis
+
+Repositori ini dilengkapi modul inferensi produksi di `src/pricing_engine.py` dan unit test otomatis di `tests/`:
+
+```python
+from src.pricing_engine import PricingEngine
+import pandas as pd
+
+engine = PricingEngine()
+sample = pd.DataFrame([{
+    'VehPower': 5, 'VehAge': 2, 'DrivAge': 30, 'BonusMalus': 50,
+    'VehBrand': 'B12', 'VehGas': 'Regular', 'Area': 'C', 'Region': 'R24', 'Density': 100
+}])
+
+premium = engine.predict_pure_premium(sample, method='two_part')
+print(f"Prediksi Premi Murni: €{premium[0]:.2f}")
+```
+
+Jalankan automated test:
+```bash
+pytest tests/
+```
+
+---
+
+## 6. Rekomendasi Bisnis & Implementasi
 
 1. **Strategi Pricing Dua Tahap (Two-Part GLM)**:
    * Direkomendasikan sebagai mesin kalkulasi tarif dasar karena memudahkan tim aktuaria menjelaskan pengaruh masing-masing variabel risiko (`DrivAge`, `VehPower`, `BonusMalus`) ke regulator.
@@ -82,7 +110,7 @@ Evaluasi performa diskriminasi tarif premi murni diuji pada data pengujian teris
 
 ---
 
-## 6. Panduan Menjalankan
+## 7. Panduan Menjalankan
 
 1. **Pasang Dependensi**:
    ```bash
